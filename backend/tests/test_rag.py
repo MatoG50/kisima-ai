@@ -2,7 +2,9 @@
 Automated Test Suite for RAG Pipeline, Ingestion, Chunking, and Retrieval.
 """
 
+# pyrefly: ignore [missing-import]
 import pytest
+# pyrefly: ignore [missing-import]
 from langchain_core.documents import Document
 from backend.rag.metadata import extract_pdf_metadata, map_pump_id_to_family
 from backend.rag.chunking import chunk_documents

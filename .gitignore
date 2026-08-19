@@ -22,3 +22,5 @@ htmlcov/
 
 # Logs
 *.log
+
+data/chroma_db/

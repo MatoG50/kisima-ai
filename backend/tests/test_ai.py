@@ -4,7 +4,9 @@ Tests /api/v1/ai/explain and /api/v1/ai/ask routes, validation rules, RAG source
 and preservation of deterministic backend calculations.
 """
 
+# pyrefly: ignore [missing-import]
 import pytest
+# pyrefly: ignore [missing-import]
 from fastapi.testclient import TestClient
 from backend.api.main import app
 

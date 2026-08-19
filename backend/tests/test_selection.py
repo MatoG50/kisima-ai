@@ -4,6 +4,7 @@ Tests all 26 Stage 4 scenarios including interpolation, candidate-specific TDH, 
 scoring, ranking, borehole yield constraints, well DSD filtering, and PostgreSQL integration.
 """
 
+# pyrefly: ignore [missing-import]
 import pytest
 import psycopg2
 from backend.models.pump import PumpModel, PumpCurvePoint, PhaseOptionEnum
