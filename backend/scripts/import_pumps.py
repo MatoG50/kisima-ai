@@ -47,7 +47,7 @@ def load_sheet(filepath):
 
         # Read first sheet
         s = sheets[0]
-        target = rel_map[s['rId']]
+        target = rel_map[s['rId']].lstrip('/')
         if not target.startswith('xl/'):
             target = 'xl/' + target
             
