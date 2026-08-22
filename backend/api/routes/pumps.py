@@ -2,6 +2,7 @@ from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Query, Depends
 from backend.database.connection import get_db_connection
 from backend.repositories.pump_repository import PumpRepository
+from backend.models.pump import PhaseOptionEnum
 from backend.api.schemas.pump import PumpSchema, PumpDetailSchema, PumpListResponseSchema, CurvePointSchema
 
 router = APIRouter(prefix="/pumps", tags=["Pumps"])
@@ -10,18 +11,25 @@ router = APIRouter(prefix="/pumps", tags=["Pumps"])
 def list_pumps(
     application_type: Optional[str] = Query(None, description="Filter by application type ('borehole' or 'well')"),
     pump_family: Optional[str] = Query(None, description="Filter by pump family (e.g. 'dsd', 'ds')"),
-    phase: Optional[str] = Query(None, description="Filter by electrical phase ('1PH', '3PH', '1PH_3PH')"),
+    phase: Optional[str] = Query(None, description="Filter by electrical phase ('1PH', '3PH', '1PH_3PH', '1', '3')"),
     min_motor_kw: Optional[float] = Query(None, ge=0.0, description="Minimum motor power in kW"),
     max_motor_kw: Optional[float] = Query(None, ge=0.0, description="Maximum motor power in kW")
 ):
     """
     Retrieve pump metadata records from PostgreSQL with optional query filtering.
     """
+    # Safely sanitize query string parameters
+    clean_pump_family = pump_family.strip() if isinstance(pump_family, str) and pump_family.strip() else None
+    clean_app_type = application_type.strip().lower() if isinstance(application_type, str) and application_type.strip() else None
+    clean_phase_enum = PhaseOptionEnum.from_raw_string(phase) if isinstance(phase, str) and phase.strip() else None
+    clean_min_kw = min_motor_kw if isinstance(min_motor_kw, (int, float)) else None
+    clean_max_kw = max_motor_kw if isinstance(max_motor_kw, (int, float)) else None
+
     try:
         conn = get_db_connection()
-        if pump_family:
-            all_pumps = PumpRepository.get_pumps_by_family(conn, pump_family)
-        elif application_type and application_type.lower() == "well":
+        if clean_pump_family:
+            all_pumps = PumpRepository.get_pumps_by_family(conn, clean_pump_family)
+        elif clean_app_type == "well":
             all_pumps = PumpRepository.get_pumps_by_family(conn, "DSD")
         else:
             all_pumps = PumpRepository.get_all_pumps(conn)
@@ -32,11 +40,18 @@ def list_pumps(
     # Apply additional Python filters
     filtered_pumps = []
     for p in all_pumps:
-        if phase and p.phase_option.value.upper() != phase.strip().upper():
+        if clean_phase_enum:
+            p_phase = p.phase_option
+            if clean_phase_enum == PhaseOptionEnum.PHASE_1 and p_phase not in (PhaseOptionEnum.PHASE_1, PhaseOptionEnum.PHASE_1_3):
+                continue
+            elif clean_phase_enum == PhaseOptionEnum.PHASE_3 and p_phase not in (PhaseOptionEnum.PHASE_3, PhaseOptionEnum.PHASE_1_3):
+                continue
+            elif clean_phase_enum == PhaseOptionEnum.PHASE_1_3 and p_phase != PhaseOptionEnum.PHASE_1_3:
+                continue
+
+        if clean_min_kw is not None and p.motor_kw < clean_min_kw:
             continue
-        if min_motor_kw is not None and p.motor_kw < min_motor_kw:
-            continue
-        if max_motor_kw is not None and p.motor_kw > max_motor_kw:
+        if clean_max_kw is not None and p.motor_kw > clean_max_kw:
             continue
         filtered_pumps.append(PumpSchema(
             pump_id=p.pump_id,
