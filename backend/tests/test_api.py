@@ -121,8 +121,8 @@ def test_api_recommendation_borehole_high_abstraction():
     assert data["abstraction_status"] == "HIGH_ABSTRACTION"
     assert len(data["warnings"]) > 0
 
-# 9. POST /api/v1/recommendations/pump (Borehole Above Yield Rejection)
-def test_api_recommendation_borehole_exceeds_yield():
+# 9. POST /api/v1/recommendations/pump (Borehole Above Yield Warning)
+def test_api_recommendation_borehole_exceeds_yield_warning():
     payload = {
         "application_type": "borehole",
         "yield_m3h": 10.0,
@@ -133,9 +133,9 @@ def test_api_recommendation_borehole_exceeds_yield():
     response = client.post("/api/v1/recommendations/pump", json=payload)
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "EXCEEDS_YIELD"
-    assert data["recommended_pump"] is None
-    assert data["error_message"] is not None
+    assert data["status"] == "SUCCESS"
+    assert data["recommended_pump"] is not None
+    assert any("High-abstraction operation" in w for w in data["warnings"])
 
 # 10. POST /api/v1/recommendations/pump (No Suitable Pump)
 def test_api_recommendation_no_suitable_pump():
@@ -214,3 +214,18 @@ def test_api_cors_headers():
     response = client.get("/api/v1/health", headers={"Origin": "http://localhost:5173"})
     assert response.status_code == 200
     assert "access-control-allow-origin" in response.headers
+
+# 15. Zero requested flow defaults to None coercion
+def test_api_recommendation_zero_requested_flow():
+    payload = {
+        "application_type": "borehole",
+        "yield_m3h": 10.0,
+        "pwl_m": 30.0,
+        "psd_m": 50.0,
+        "customer_requested_flow_m3h": 0.0
+    }
+    response = client.post("/api/v1/recommendations/pump", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "SUCCESS"
+    assert data["design_flow_m3h"] == 8.0 # Coerced to None, so uses 80% sustainable flow (8.0)

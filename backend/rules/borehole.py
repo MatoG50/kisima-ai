@@ -30,6 +30,9 @@ def evaluate_borehole_application(
     """
     Evaluate borehole rules and compute hydraulic calculation results if pipe diameter is available.
     """
+    if customer_requested_flow_m3h == 0.0:
+        customer_requested_flow_m3h = None
+
     # 1. Input Validation
     validate_borehole_inputs(
         yield_m3h=yield_m3h,
@@ -53,15 +56,11 @@ def evaluate_borehole_application(
         status = AbstractionStatusEnum.SUSTAINABLE
     else:
         req_flow = float(customer_requested_flow_m3h)
-        if req_flow > yield_m3h:
-            design_flow_m3h = req_flow
+        design_flow_m3h = req_flow
+        if req_flow >= yield_m3h:
             status = AbstractionStatusEnum.EXCEEDS_YIELD
-            error_msg = (
-                f"Requested abstraction flow ({req_flow} m3/h) exceeds the tested borehole yield ({yield_m3h} m3/h). "
-                "Pumping above tested yield risks dry running, pump damage, and borehole collapse."
-            )
+            warning_msg = "High-abstraction operation. Not the preferred sustainable design."
         elif req_flow > sustainable_flow_m3h:
-            design_flow_m3h = req_flow
             status = AbstractionStatusEnum.HIGH_ABSTRACTION
             warning_msg = (
                 f"The requested flow ({req_flow} m3/h) is above the recommended {int(sustainable_yield_factor * 100)}% "
@@ -70,7 +69,6 @@ def evaluate_borehole_application(
                 "Operating duration should be confirmed against borehole recovery/recharge characteristics and site conditions."
             )
         else:
-            design_flow_m3h = req_flow
             status = AbstractionStatusEnum.SUSTAINABLE
 
     # 4. Hydraulics Calculation (if pipe diameter is specified)

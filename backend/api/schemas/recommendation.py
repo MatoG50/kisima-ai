@@ -35,6 +35,9 @@ class RecommendationRequestSchema(BaseModel):
             if self.static_head_m is None or self.static_head_m < 0:
                 raise ValueError("Well application requires a non-negative 'static_head_m' (>= 0).")
 
+        if self.customer_requested_flow_m3h == 0.0:
+            self.customer_requested_flow_m3h = None
+
         if self.customer_requested_flow_m3h is not None and self.customer_requested_flow_m3h <= 0:
             raise ValueError("Customer requested flow must be strictly positive (> 0 m3/h).")
 
@@ -83,6 +86,7 @@ class RejectionSummarySchema(BaseModel):
     rejected_depth_exceeded: int = 0
     rejected_out_of_range: int = 0
     rejected_insufficient_head: int = 0
+    rejected_inappropriate_flow_class: int = 0
     reason: Optional[str] = None
 
 class RecommendationResponseSchema(BaseModel):

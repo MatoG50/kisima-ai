@@ -77,36 +77,36 @@ def test_scenario_05_flow_above_curve_range():
 
 # 6. Head sufficient
 def test_scenario_06_head_sufficient():
-    res = evaluate_candidate_pump(SAMPLE_PUMP, SAMPLE_CURVES, pwl_m=30.0, psd_m=50.0, design_flow_m3h=1.0)
+    res = evaluate_candidate_pump(SAMPLE_PUMP, SAMPLE_CURVES, pwl_m=30.0, psd_m=50.0, design_flow_m3h=1.5)
     assert res.is_viable is True
     assert res.is_head_suitable is True
     assert res.head_margin_m > 0
 
 # 7. Head insufficient
 def test_scenario_07_head_insufficient():
-    res = evaluate_candidate_pump(SAMPLE_PUMP, SAMPLE_CURVES, pwl_m=60.0, psd_m=80.0, design_flow_m3h=1.0)
+    res = evaluate_candidate_pump(SAMPLE_PUMP, SAMPLE_CURVES, pwl_m=60.0, psd_m=80.0, design_flow_m3h=1.5)
     assert res.is_viable is False
     assert res.is_head_suitable is False
     assert res.rejection_reason == RejectionReasonEnum.INSUFFICIENT_HEAD
 
 # 8. Positive head margin
 def test_scenario_08_positive_head_margin():
-    res = evaluate_candidate_pump(SAMPLE_PUMP, SAMPLE_CURVES, pwl_m=20.0, psd_m=40.0, design_flow_m3h=1.0)
+    res = evaluate_candidate_pump(SAMPLE_PUMP, SAMPLE_CURVES, pwl_m=20.0, psd_m=40.0, design_flow_m3h=1.5)
     assert res.head_margin_m > 0
 
 # 9. Zero head margin
 def test_scenario_09_zero_head_margin():
-    res = evaluate_candidate_pump(SAMPLE_PUMP, SAMPLE_CURVES, pwl_m=47.6, psd_m=40.0, design_flow_m3h=1.0)
+    res = evaluate_candidate_pump(SAMPLE_PUMP, SAMPLE_CURVES, pwl_m=41.2, psd_m=40.0, design_flow_m3h=1.5)
     assert res.pump_head_at_design_flow_m >= res.required_tdh_m
 
 # 10. Depth suitability
 def test_scenario_10_depth_suitability():
-    res = evaluate_candidate_pump(SAMPLE_PUMP, SAMPLE_CURVES, pwl_m=30.0, psd_m=150.0, design_flow_m3h=1.0)
+    res = evaluate_candidate_pump(SAMPLE_PUMP, SAMPLE_CURVES, pwl_m=30.0, psd_m=150.0, design_flow_m3h=1.5)
     assert res.is_depth_suitable is True
 
 # 11. Depth failure
 def test_scenario_11_depth_failure():
-    res = evaluate_candidate_pump(SAMPLE_PUMP, SAMPLE_CURVES, pwl_m=30.0, psd_m=250.0, design_flow_m3h=1.0)
+    res = evaluate_candidate_pump(SAMPLE_PUMP, SAMPLE_CURVES, pwl_m=30.0, psd_m=250.0, design_flow_m3h=1.5)
     assert res.is_viable is False
     assert res.is_depth_suitable is False
     assert res.rejection_reason == RejectionReasonEnum.DEPTH_EXCEEDED
@@ -202,13 +202,14 @@ def test_scenario_20_borehole_high_abstraction():
     except Exception as e:
         pytest.fail(f"PostgreSQL connection failed: {e}")
 
-# 21. Borehole above-yield rejection
-def test_scenario_21_borehole_above_yield_rejection():
+# 21. Borehole above-yield warning (no rejection)
+def test_scenario_21_borehole_above_yield_warning():
     try:
         conn = psycopg2.connect(dbname='capstone_pump_db', user='postgres', host='localhost', port=5432)
         res = PumpRecommendationService.recommend_borehole(conn, yield_m3h=10.0, pwl_m=30.0, psd_m=50.0, customer_requested_flow_m3h=12.0)
-        assert res["status"] == "EXCEEDS_YIELD"
-        assert res["recommended_pump"] is None
+        assert res["status"] == "SUCCESS"
+        assert res["recommended_pump"] is not None
+        assert any("High-abstraction operation" in w for w in res["warnings"])
         conn.close()
     except Exception as e:
         pytest.fail(f"PostgreSQL connection failed: {e}")
@@ -271,3 +272,34 @@ def test_scenario_26_preservation_of_original_curve_points():
     bep = find_best_efficiency_point(SAMPLE_CURVES)
     assert bep.flow_m3h == 1.5
     assert bep.efficiency_percent == 47.0
+
+# 27. Test extract_nominal_flow_class parser helper
+def test_extract_nominal_flow_class():
+    from backend.selection.evaluator import extract_nominal_flow_class
+    assert extract_nominal_flow_class("ds05-17") == 5.0
+    assert extract_nominal_flow_class("dss08-11") == 8.0
+    assert extract_nominal_flow_class("ds60-16") == 60.0
+    assert extract_nominal_flow_class("invalid") is None
+
+# 28. Test appropriateness filter check (bounding box)
+def test_appropriateness_filter_bounds():
+    # DS60 pump at design flow 4.8 should be rejected (4.8 is outside 60 * [0.6, 1.4])
+    ds60_pump = PumpModel("ds60-16", "dayliff ds60/16", 30.0, 300.0, PhaseOptionEnum.PHASE_3, None, 64.1, 4.0, "ds60-16")
+    mock_curves = [
+        PumpCurvePoint("ds60-16", 0.0, 100.0, 10.0),
+        PumpCurvePoint("ds60-16", 10.0, 80.0, 50.0)
+    ]
+    res = evaluate_candidate_pump(ds60_pump, mock_curves, pwl_m=30.0, psd_m=50.0, design_flow_m3h=4.8)
+    assert res.is_viable is False
+    assert res.rejection_reason == RejectionReasonEnum.INAPPROPRIATE_FLOW_CLASS
+
+# 29. Test alternative candidates count constraint
+def test_alternatives_count_constraint():
+    try:
+        conn = psycopg2.connect(dbname='capstone_pump_db', user='postgres', host='localhost', port=5432)
+        res = PumpRecommendationService.recommend_borehole(conn, yield_m3h=10.0, pwl_m=30.0, psd_m=50.0)
+        if res["status"] == "SUCCESS":
+            assert len(res["alternatives"]) <= 2
+        conn.close()
+    except Exception as e:
+        pytest.fail(f"PostgreSQL connection failed: {e}")

@@ -18,6 +18,18 @@ class RejectionReasonEnum(str, Enum):
     OUT_OF_CURVE_RANGE = "OUT_OF_CURVE_RANGE"
     INSUFFICIENT_HEAD = "INSUFFICIENT_HEAD"
     FAMILY_MISMATCH = "FAMILY_MISMATCH"
+    INAPPROPRIATE_FLOW_CLASS = "INAPPROPRIATE_FLOW_CLASS"
+
+def extract_nominal_flow_class(pump_id: str) -> Optional[float]:
+    """
+    Extracts the nominal flow class from a pump identifier.
+    e.g., 'ds05-17' -> 5.0, 'dss08-11' -> 8.0, 'ds60-16' -> 60.0
+    """
+    first_part = pump_id.split('-')[0]
+    digits = "".join(c for c in first_part if c.isdigit())
+    if digits:
+        return float(digits)
+    return None
 
 @dataclass
 class EvaluatedCandidate:
@@ -138,8 +150,23 @@ def evaluate_candidate_pump(
             rejection_reason = RejectionReasonEnum.OUT_OF_CURVE_RANGE
             rejection_msg = str(err)
 
-    # 5. Overall Viability Flag
-    is_viable = is_depth_suitable and is_in_curve_range and is_head_suitable
+    # 5. Appropriateness Filter
+    is_flow_appropriate = True
+    nominal_flow = extract_nominal_flow_class(pump.pump_id)
+    if nominal_flow is not None:
+        lower_bound = nominal_flow * 0.6
+        upper_bound = nominal_flow * 1.4
+        if not (lower_bound <= design_flow_m3h <= upper_bound):
+            is_flow_appropriate = False
+            if not rejection_reason:
+                rejection_reason = RejectionReasonEnum.INAPPROPRIATE_FLOW_CLASS
+                rejection_msg = (
+                    f"Pump nominal flow class ({nominal_flow} m3/h) is not within +/- 40% margin "
+                    f"of the design flow ({design_flow_m3h} m3/h)."
+                )
+
+    # 6. Overall Viability Flag
+    is_viable = is_depth_suitable and is_in_curve_range and is_head_suitable and is_flow_appropriate
 
     return EvaluatedCandidate(
         pump=pump,

@@ -25,6 +25,9 @@ def evaluate_well_application(
     """
     Evaluate well application rules and compute hydraulics.
     """
+    if customer_requested_flow_m3h == 0.0:
+        customer_requested_flow_m3h = None
+
     # 1. Validation
     validate_well_inputs(
         static_head_m=static_head_m,

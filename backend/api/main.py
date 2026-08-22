@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.exceptions import RequestValidationError
 
 from backend.api.routes.health import router as health_router
@@ -65,6 +65,11 @@ async def global_exception_handler(request: Request, exc: Exception):
             "error_type": exc.__class__.__name__
         }
     )
+
+# Root redirect to /docs for easier API exploration
+@app.get("/", include_in_schema=False)
+async def root_redirect():
+    return RedirectResponse(url="/docs")
 
 # Include Routers under /api/v1 prefix
 app.include_router(health_router, prefix="/api/v1")

@@ -59,17 +59,18 @@ def test_customer_flow_above_80_percent_below_yield():
     assert "above the recommended 80%" in res.warning_message
 
 def test_customer_flow_equal_to_yield():
-    # Yield = 10 m3/h, requested = 10 m3/h -> HIGH_ABSTRACTION
+    # Yield = 10 m3/h, requested = 10 m3/h -> EXCEEDS_YIELD with warning
     res = evaluate_borehole_application(yield_m3h=10.0, pwl_m=50.0, psd_m=80.0, customer_requested_flow_m3h=10.0)
     assert res.design_flow_m3h == 10.0
-    assert res.abstraction_status == AbstractionStatusEnum.HIGH_ABSTRACTION
+    assert res.abstraction_status == AbstractionStatusEnum.EXCEEDS_YIELD
+    assert "High-abstraction operation" in res.warning_message
 
-def test_customer_flow_above_yield_rejection():
-    # Yield = 10 m3/h, requested = 12 m3/h (12 > 10) -> EXCEEDS_YIELD
+def test_customer_flow_above_yield_warning():
+    # Yield = 10 m3/h, requested = 12 m3/h (12 > 10) -> EXCEEDS_YIELD with warning
     res = evaluate_borehole_application(yield_m3h=10.0, pwl_m=50.0, psd_m=80.0, customer_requested_flow_m3h=12.0)
     assert res.abstraction_status == AbstractionStatusEnum.EXCEEDS_YIELD
-    assert res.error_message is not None
-    assert "exceeds the tested borehole yield" in res.error_message
+    assert res.error_message is None
+    assert "High-abstraction operation" in res.warning_message
 
 def test_pump_max_depth_suitability():
     # PSD = 150m, pump max_depth = 200m -> suitable

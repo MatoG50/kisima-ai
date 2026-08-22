@@ -42,23 +42,6 @@ class PumpRecommendationService:
             destination_elevation_m=destination_elevation_m
         )
 
-        # Handle hard yield rejection
-        if borehole_rule_res.abstraction_status == AbstractionStatusEnum.EXCEEDS_YIELD:
-            return {
-                "status": "EXCEEDS_YIELD",
-                "application_type": "borehole",
-                "abstraction_status": borehole_rule_res.abstraction_status.value,
-                "error_message": borehole_rule_res.error_message,
-                "warnings": [],
-                "recommended_pump": None,
-                "alternatives": [],
-                "rejection_summary": {
-                    "total_candidates_evaluated": 0,
-                    "viable_candidates_count": 0,
-                    "reason": "Requested flow exceeds borehole yield."
-                }
-            }
-
         design_flow = borehole_rule_res.design_flow_m3h
 
         # 2. Fetch Pumps and Performance Curves from PostgreSQL
@@ -98,7 +81,8 @@ class PumpRecommendationService:
             "viable_candidates_count": len(ranked_viable),
             "rejected_depth_exceeded": rejection_counts[RejectionReasonEnum.DEPTH_EXCEEDED.value],
             "rejected_out_of_range": rejection_counts[RejectionReasonEnum.OUT_OF_CURVE_RANGE.value],
-            "rejected_insufficient_head": rejection_counts[RejectionReasonEnum.INSUFFICIENT_HEAD.value]
+            "rejected_insufficient_head": rejection_counts[RejectionReasonEnum.INSUFFICIENT_HEAD.value],
+            "rejected_inappropriate_flow_class": rejection_counts[RejectionReasonEnum.INAPPROPRIATE_FLOW_CLASS.value]
         }
 
         # 5. Build Response
@@ -119,7 +103,7 @@ class PumpRecommendationService:
             }
 
         rec_pump = ranked_viable[0].to_dict()
-        alt_pumps = [c.to_dict() for c in ranked_viable[1:]]
+        alt_pumps = [c.to_dict() for c in ranked_viable[1:3]]
 
         return {
             "status": "SUCCESS",
@@ -185,7 +169,8 @@ class PumpRecommendationService:
             "total_candidates_evaluated": len(family_pumps),
             "viable_candidates_count": len(ranked_viable),
             "rejected_out_of_range": rejection_counts[RejectionReasonEnum.OUT_OF_CURVE_RANGE.value],
-            "rejected_insufficient_head": rejection_counts[RejectionReasonEnum.INSUFFICIENT_HEAD.value]
+            "rejected_insufficient_head": rejection_counts[RejectionReasonEnum.INSUFFICIENT_HEAD.value],
+            "rejected_inappropriate_flow_class": rejection_counts[RejectionReasonEnum.INAPPROPRIATE_FLOW_CLASS.value]
         }
 
         if not ranked_viable:
@@ -204,7 +189,7 @@ class PumpRecommendationService:
             }
 
         rec_pump = ranked_viable[0].to_dict()
-        alt_pumps = [c.to_dict() for c in ranked_viable[1:]]
+        alt_pumps = [c.to_dict() for c in ranked_viable[1:3]]
 
         return {
             "status": "SUCCESS",

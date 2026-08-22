@@ -9,6 +9,14 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage, AIMessage
 from langchain_core.outputs import ChatResult, ChatGeneration
 
+try:
+    # pyrefly: ignore [missing-import]
+    from langchain_openai import ChatOpenAI  # type: ignore
+    HAS_OPENAI = True
+except ImportError:
+    ChatOpenAI = None  # type: ignore
+    HAS_OPENAI = False
+
 class MockLLM(BaseChatModel):
     """
     Deterministic Mock LLM for offline testing, cost control, and demonstration.
@@ -29,16 +37,13 @@ class MockLLM(BaseChatModel):
         
         # Synthesize technical explanation based on input prompt context
         explanation = (
-            "Technical Explanation:\n"
-            "The deterministic engineering engine selected the primary pump candidate based on hydraulic performance, "
-            "pipe friction head losses (calculated via the Hazen-Williams formula), and depth suitability constraints.\n\n"
-            "Key Observations:\n"
-            "- Operating Duty Point & TDH: The pump head matches or exceeds the required Total Dynamic Head at design flow.\n"
-            "- Hydraulic Efficiency: Operating efficiency is near the Best Efficiency Point (BEP) for optimal energy consumption.\n"
-            "- Depth Rating: Pump Setting Depth (PSD) complies with the manufacturer's maximum immersion depth rating.\n"
-            "- Borehole Yield Constraints: Abstraction rules ensure sustainable extraction without over-pumping the aquifer.\n\n"
-            "Manufacturer Documentation Context:\n"
-            "Referenced manufacturer datasheets confirm the pump family's suitability for submersible groundwater pumping applications."
+            "I strongly recommend the Dayliff DS05-17 pump for your borehole water supply requirement. "
+            "With a tested borehole yield of 10.0 m³/h, setting the design flow to a sustainable 8.0 m³/h ensures the long-term health and recharge rate of your aquifer. "
+            "The DS05-17 delivers a robust pump head of 89.2 m against your required Total Dynamic Head (TDH) of 93.6 m, with a 4.6 m head safety margin "
+            "that guarantees stable, continuous water delivery without overloading the motor.\n\n"
+            "Operating at an impressive hydraulic efficiency of 64.5%, this model optimizes power consumption to significantly reduce your daily electricity costs. "
+            "Manufactured from premium AISI304 stainless steel with precision-engineered multistage centrifugal impellers, the DS05-17 ensures superior corrosion resistance "
+            "and exceptional operating lifespan in demanding submersible conditions."
         )
         
         gen = ChatGeneration(message=AIMessage(content=explanation))
@@ -50,9 +55,8 @@ def get_llm_model(temperature: float = 0.2) -> BaseChatModel:
     """
     llm_provider = os.environ.get("LLM_PROVIDER", "auto").lower()
 
-    if llm_provider == "openai" or (llm_provider == "auto" and os.environ.get("OPENAI_API_KEY")):
+    if HAS_OPENAI and (llm_provider == "openai" or (llm_provider == "auto" and os.environ.get("OPENAI_API_KEY"))):
         try:
-            from langchain_openai import ChatOpenAI
             model_name = os.environ.get("LLM_MODEL", "gpt-4o-mini")
             return ChatOpenAI(model=model_name, temperature=temperature)
         except Exception:

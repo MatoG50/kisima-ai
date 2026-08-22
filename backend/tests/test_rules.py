@@ -60,13 +60,15 @@ def test_scenario_08_customer_flow_above_80_percent_below_yield():
 # 9. Customer flow equal to yield
 def test_scenario_09_customer_flow_equal_to_yield():
     res = evaluate_borehole_application(yield_m3h=10.0, pwl_m=20.0, psd_m=30.0, customer_requested_flow_m3h=10.0)
-    assert res.abstraction_status == AbstractionStatusEnum.HIGH_ABSTRACTION
+    assert res.abstraction_status == AbstractionStatusEnum.EXCEEDS_YIELD
+    assert "High-abstraction operation" in res.warning_message
 
-# 10. Customer flow above yield -> rejection
-def test_scenario_10_customer_flow_above_yield_rejection():
+# 10. Customer flow above yield -> warning (no rejection)
+def test_scenario_10_customer_flow_above_yield_warning():
     res = evaluate_borehole_application(yield_m3h=10.0, pwl_m=20.0, psd_m=30.0, customer_requested_flow_m3h=11.0)
     assert res.abstraction_status == AbstractionStatusEnum.EXCEEDS_YIELD
-    assert res.error_message is not None
+    assert res.error_message is None
+    assert "High-abstraction operation" in res.warning_message
 
 # 11. Well default flow = 3 m3/h
 def test_scenario_11_well_default_flow_3m3h():
