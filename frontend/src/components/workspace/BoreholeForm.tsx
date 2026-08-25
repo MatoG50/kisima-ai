@@ -19,10 +19,10 @@ export const BoreholeForm: React.FC<BoreholeFormProps> = ({
   const psdM = formData.psd_m ?? 60;
   const destElev = formData.destination_elevation_m ?? 0;
 
-  // Real-time live estimate metrics for user feedback
+  // Real-time live estimate metrics matching backend DEFAULT_SUSTAINABLE_YIELD_FACTOR = 0.80
   const estStaticHead = pwlM + destElev;
   const estRiserQty = Math.ceil(psdM / 3.0);
-  const sustainableMaxFlow = yieldM3h * 0.75; // 75% yield limit rule visualization
+  const sustainableMaxFlow = yieldM3h * 0.80; // 80% yield limit rule visualization
 
   return (
     <div className="space-y-6">
@@ -34,7 +34,7 @@ export const BoreholeForm: React.FC<BoreholeFormProps> = ({
             Sustainable Borehole Abstraction Protection Active
           </h4>
           <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
-            The backend automatically safeguards your borehole by limiting design flow to <strong className="text-cyan-300 font-mono-code">75% of tested yield</strong> (or 60% for high-flow boreholes).
+            The backend automatically safeguards your borehole by limiting design flow to <strong className="text-cyan-300 font-mono-code">80% of tested yield</strong>.
           </p>
         </div>
       </div>
@@ -143,7 +143,7 @@ export const BoreholeForm: React.FC<BoreholeFormProps> = ({
             <span className="font-mono-code font-bold text-slate-200 text-sm">{estRiserQty} pipes</span>
           </div>
           <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800/60">
-            <span className="text-slate-400 block text-[11px]">Sustainable Limit</span>
+            <span className="text-slate-400 block text-[11px]">Sustainable Limit (80%)</span>
             <span className="font-mono-code font-bold text-emerald-400 text-sm">{sustainableMaxFlow.toFixed(1)} m³/h</span>
           </div>
         </div>

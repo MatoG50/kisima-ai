@@ -12,7 +12,7 @@ export const EngineeringSummary: React.FC<EngineeringSummaryProps> = ({ recommen
   const flow = recommendation.design_flow_m3h || pump.design_flow_m3h;
   const tdh = pump.required_tdh_m;
   const headAtDuty = pump.pump_head_at_design_flow_m;
-  const efficiency = pump.operating_efficiency_percent;
+  const efficiency = (pump.operating_efficiency_percent > 1 ? pump.operating_efficiency_percent : pump.operating_efficiency_percent * 100).toFixed(1);
 
   return (
     <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 shadow-xl">

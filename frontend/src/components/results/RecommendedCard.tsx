@@ -20,6 +20,11 @@ export const RecommendedCard: React.FC<RecommendedCardProps> = ({
 
   const pumpFamily = pump.pump_name?.split(' ')[0] || 'Submersible';
 
+  // Format score and efficiency values safely whether given as percentages (67.5) or fractions (0.675)
+  const formattedScore = (pump.suitability_score > 1 ? pump.suitability_score : pump.suitability_score * 100).toFixed(0);
+  const formattedOperatingEta = (pump.operating_efficiency_percent > 1 ? pump.operating_efficiency_percent : pump.operating_efficiency_percent * 100).toFixed(1);
+  const formattedBepEta = (pump.bep_efficiency_percent > 1 ? pump.bep_efficiency_percent : pump.bep_efficiency_percent * 100).toFixed(1);
+
   return (
     <div className="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-cyan-500/60 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-cyan-950/40 relative overflow-hidden">
       {/* Background ambient glow */}
@@ -42,7 +47,7 @@ export const RecommendedCard: React.FC<RecommendedCardProps> = ({
         <div className="flex items-center gap-2 bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-800">
           <span className="text-xs text-slate-400">Match Score:</span>
           <span className="font-mono-code font-bold text-emerald-400 text-sm">
-            {(pump.suitability_score * 100).toFixed(0)}%
+            {formattedScore}%
           </span>
         </div>
       </div>
@@ -84,9 +89,9 @@ export const RecommendedCard: React.FC<RecommendedCardProps> = ({
         <div className="bg-slate-950/70 p-4 rounded-2xl border border-slate-800/80">
           <span className="text-xs text-slate-400 block mb-1">Operating Efficiency</span>
           <span className="text-xl font-bold font-mono-code text-emerald-400">
-            {pump.operating_efficiency_percent}%
+            {formattedOperatingEta}%
           </span>
-          <span className="text-[10px] text-slate-400 block mt-1">BEP Max: {pump.bep_efficiency_percent}%</span>
+          <span className="text-[10px] text-slate-400 block mt-1">BEP Max: {formattedBepEta}%</span>
         </div>
 
         <div className="bg-slate-950/70 p-4 rounded-2xl border border-slate-800/80">
