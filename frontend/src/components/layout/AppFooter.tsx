@@ -15,7 +15,7 @@ export const AppFooter: React.FC = () => {
               <span className="font-bold text-slate-100">Kisima AI</span>
             </div>
             <p className="text-sm text-slate-400 max-w-sm mb-4">
-              AI-assisted hydraulic water pump sizing and solar array calculation platform powered by verified manufacturer specifications and RAG intelligence.
+              AI-assisted hydraulic water pump sizing platform powered by manufacturer specifications and RAG intelligence.
             </p>
             <div className="flex items-center gap-4 text-xs text-slate-400">
               <span className="flex items-center gap-1.5">
@@ -42,11 +42,15 @@ export const AppFooter: React.FC = () => {
 
           {/* Supported Families */}
           <div>
-            <h4 className="text-xs font-semibold text-slate-200 uppercase tracking-wider mb-3">Supported Pump Families</h4>
+            <h4 className="text-xs font-semibold text-slate-200 uppercase tracking-wider mb-3">
+              Supported Pump Families
+            </h4>
+
             <ul className="space-y-2 text-xs text-slate-400">
-              <li>• <strong className="text-slate-300">DSD Series</strong> (Submersible Well / Surface)</li>
-              <li>• <strong className="text-slate-300">DS Series</strong> (Deep Borehole Submersible)</li>
-              <li>• <strong className="text-slate-300">Dayliff Solar</strong> Hybrid & DC Drive</li>
+              <li>• <strong className="text-slate-300">DSD Series</strong> — Submersible Borehole Pumps</li>
+              <li>• <strong className="text-slate-300">DS Series</strong> — Submersible Borehole Pumps</li>
+              <li>• <strong className="text-slate-300">DSS Series</strong> — Submersible Borehole Pumps</li>
+              <li>• <strong className="text-slate-300">DSP Series</strong> — Submersible Borehole Pumps</li>
             </ul>
           </div>
         </div>

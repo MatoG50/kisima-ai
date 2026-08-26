@@ -47,7 +47,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Branding */}
-          <div 
+          <div
             className="flex items-center gap-3 cursor-pointer group"
             onClick={() => setActiveTab('landing')}
           >
@@ -63,7 +63,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                   Hydraulic Engine
                 </span>
               </div>
-              <p className="text-xs text-slate-400 hidden sm:block">Solar Pump & Water System Sizing</p>
+              <p className="text-xs text-slate-400 hidden sm:block">Pump System Sizing</p>
             </div>
           </div>
 
@@ -71,32 +71,29 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           <nav className="hidden md:flex items-center gap-1 bg-slate-900/60 p-1.5 rounded-xl border border-slate-800/60">
             <button
               onClick={() => setActiveTab('landing')}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                activeTab === 'landing'
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'landing'
                   ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/10'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-              }`}
+                }`}
             >
               Overview
             </button>
             <button
               onClick={() => setActiveTab('sizing')}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                activeTab === 'sizing'
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'sizing'
                   ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/10'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-              }`}
+                }`}
             >
               Pump Sizing
             </button>
             {hasResults && (
               <button
                 onClick={() => setActiveTab('results')}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
-                  activeTab === 'results'
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${activeTab === 'results'
                     ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/10'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                }`}
+                  }`}
               >
                 <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
                 Recommendations
@@ -104,11 +101,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             )}
             <button
               onClick={() => setActiveTab('engineering')}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                activeTab === 'engineering'
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'engineering'
                   ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/10'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-              }`}
+                }`}
             >
               About Engine
             </button>
@@ -137,14 +133,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
             {/* Health Status Indicator */}
             <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
-              <div 
-                className={`w-2.5 h-2.5 rounded-full ${
-                  backendStatus === 'online'
+              <div
+                className={`w-2.5 h-2.5 rounded-full ${backendStatus === 'online'
                     ? 'bg-emerald-500 shadow-sm shadow-emerald-500/80 animate-pulse'
                     : backendStatus === 'offline'
-                    ? 'bg-rose-500'
-                    : 'bg-amber-500 animate-ping'
-                }`} 
+                      ? 'bg-rose-500'
+                      : 'bg-amber-500 animate-ping'
+                  }`}
                 title={`Backend API ${backendStatus}`}
               />
               <span className="text-[11px] text-slate-400 font-medium hidden xl:inline">

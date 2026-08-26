@@ -134,7 +134,7 @@ export function App() {
       payload.psd_m = formData.psd_m;
     } else {
       payload.static_head_m = formData.static_head_m;
-      payload.default_pump_family = formData.default_pump_family || 'DSD';
+      payload.default_pump_family = 'DSD';
     }
 
     try {

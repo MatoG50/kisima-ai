@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormField } from './FormField';
-import { Info, Droplets } from 'lucide-react';
+import { Droplets } from 'lucide-react';
 import type { RecommendationRequest } from '../../services/types';
 
 interface WellFormProps {
@@ -14,8 +14,6 @@ export const WellForm: React.FC<WellFormProps> = ({
   onChange,
   errors,
 }) => {
-  const pumpFamily = formData.default_pump_family || 'DSD';
-
   return (
     <div className="space-y-6">
       {/* Well Mode Banner */}
@@ -72,23 +70,18 @@ export const WellForm: React.FC<WellFormProps> = ({
           min={0}
         />
 
-        {/* Candidate Pump Family */}
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="default_pump_family" className="text-xs font-semibold text-slate-200">
-            Candidate Pump Family
-          </label>
-          <select
-            id="default_pump_family"
-            value={pumpFamily}
-            onChange={(e) => onChange({ default_pump_family: e.target.value })}
-            className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono-code"
-          >
-            <option value="DSD">DSD Series (Default Submersible Well)</option>
-            <option value="DS">DS Series (Deep Submersible)</option>
-          </select>
-          <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
-            <Info className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-            <span>Select the preferred manufacturer pump series family.</span>
+        {/* Read-Only Informational Card for Pump Series */}
+        <div className="flex flex-col justify-center bg-slate-950/60 border border-slate-800/80 rounded-xl p-3.5 space-y-1">
+          <span className="text-xs font-semibold text-slate-200">
+            Pump Series
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold font-mono-code text-blue-300">
+              DSD Series
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-400 leading-snug">
+            Default submersible borehole pump family used for well sizing.
           </p>
         </div>
       </div>
