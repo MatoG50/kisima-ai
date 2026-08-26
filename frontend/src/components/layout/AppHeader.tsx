@@ -77,8 +77,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             </div>
           </div>
 
-          {/* Desktop Navigation Links (Visible on lg: 1024px and up) */}
-          <nav className="hidden lg:flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800/80 shrink-0">
+          {/* Desktop Navigation Links (Visible on xl: 1280px and up) */}
+          <nav className="hidden xl:flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800/80 shrink-0">
             <button
               onClick={() => handleNavClick('landing')}
               className={`px-3 lg:px-3.5 py-1.5 rounded-lg text-xs lg:text-sm font-medium transition-all duration-200 ${
@@ -132,7 +132,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             {/* Manufacturer AI Assistant Button (Desktop) */}
             <button
               onClick={onOpenQAModal}
-              className="hidden lg:flex items-center gap-1.5 text-xs text-slate-300 bg-slate-900/80 hover:bg-slate-800 hover:text-white px-2.5 py-1.5 rounded-lg border border-slate-700/60 transition-colors"
+              className="hidden xl:flex items-center gap-1.5 text-xs text-slate-300 bg-slate-900/80 hover:bg-slate-800 hover:text-white px-2.5 py-1.5 rounded-lg border border-slate-700/60 transition-colors"
               title="Manufacturer AI Assistant — Available Now"
             >
               <HelpCircle className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
@@ -146,7 +146,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             {/* Kisima AI Copilot (Coming Soon) */}
             <button
               onClick={onOpenAssistantModal}
-              className="hidden sm:flex items-center gap-1.5 text-xs font-semibold bg-gradient-to-r from-blue-600/20 to-cyan-600/20 hover:from-blue-600/30 hover:to-cyan-600/30 text-cyan-300 border border-cyan-500/30 px-2.5 py-1.5 rounded-lg transition-all shadow-sm shadow-cyan-500/5"
+              className="hidden xl:flex items-center gap-1.5 text-xs font-semibold bg-gradient-to-r from-blue-600/20 to-cyan-600/20 hover:from-blue-600/30 hover:to-cyan-600/30 text-cyan-300 border border-cyan-500/30 px-2.5 py-1.5 rounded-lg transition-all shadow-sm shadow-cyan-500/5"
               title="Kisima AI Copilot — Future Feature (Coming Soon)"
             >
               <Bot className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
@@ -173,10 +173,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               </span>
             </div>
 
-            {/* Responsive Menu Toggle Button (Visible below lg: 1024px) */}
+            {/* Responsive Menu Toggle Button (Visible below xl: 1280px) */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="xl:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
               aria-label="Toggle navigation menu"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5 text-cyan-400" /> : <Menu className="w-5 h-5" />}
@@ -185,9 +185,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         </div>
       </div>
 
-      {/* Responsive Navigation Menu Dropdown (Visible below lg: 1024px) */}
+      {/* Responsive Navigation Menu Dropdown (Visible below xl: 1280px) */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-slate-950 border-b border-slate-800 px-4 py-4 space-y-3 animate-fade-in">
+        <div className="xl:hidden bg-slate-950 border-b border-slate-800 px-4 py-4 space-y-3 animate-fade-in">
           <div className="space-y-1">
             <button
               onClick={() => handleNavClick('landing')}
