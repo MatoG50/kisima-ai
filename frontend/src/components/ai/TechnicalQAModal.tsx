@@ -49,8 +49,6 @@ export const TechnicalQAModal: React.FC<TechnicalQAModalProps> = ({
     "What materials are used in DSD pumps?",
     "What electrical phase options are available?",
     "What is the minimum borehole diameter?",
-    "What type of liquid can this pump handle?",
-    "What is the maximum liquid temperature?",
   ];
 
   return (

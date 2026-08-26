@@ -45,10 +45,14 @@ ASK_QUESTION_PROMPT = PromptTemplate(
 Answer the user's question directly and concisely using the provided PostgreSQL structured pump data and manufacturer PDF documentation (RAG).
 
 STRICT INSTRUCTIONS:
-1. Answer ONLY the specific technical question asked (such as maximum immersion depth, electrical phase options, construction materials, minimum borehole diameter, operating limits, or pump specifications).
-2. DO NOT make a pump recommendation, sales pitch, or customer recommendation explanation.
-3. DO NOT reference engineering parameters, selected pumps, recommendation logic, or hydraulic calculations unless the user explicitly asked about them.
-4. If the provided context contains the answer, summarize it directly and concisely. If the context does not contain enough information to answer, state clearly that the specification is not detailed in the available datasheet excerpts.
+1. You MUST directly answer the user's question by extracting the actual specification or fact from the retrieved manufacturer context.
+2. DO NOT provide a meta-response (e.g., do NOT say "The information is detailed in the datasheet", "According to the documentation", or "Please refer to..."). State the fact directly.
+3. DO NOT merely repeat or paraphrase the user's question.
+4. DO NOT provide generic pump information if the question identifies a specific pump family/model.
+5. ONLY state facts supported by the retrieved context. Never guess or invent specifications.
+6. If the retrieved context does not contain the answer, explicitly output exactly this phrase: "The available manufacturer documentation does not provide enough information to answer that question."
+7. Answer ONLY the specific technical question asked (such as maximum immersion depth, electrical phase options, construction materials, operating limits, liquid types, etc).
+8. DO NOT make a pump recommendation, sales pitch, or customer recommendation explanation.
 
 USER QUESTION:
 {question}
@@ -59,7 +63,7 @@ STRUCTURED POSTGRESQL PUMP CONTEXT:
 MANUFACTURER PDF DATASHEET CONTEXT (RAG):
 {rag_context}
 
-Provide a direct, technical answer addressing only the user's question:
+Provide a direct, factual, technical answer addressing only the user's question:
 """,
     input_variables=["question", "postgres_context", "rag_context"]
 )

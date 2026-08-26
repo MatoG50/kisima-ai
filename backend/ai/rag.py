@@ -37,7 +37,7 @@ def explain_recommendation(recommendation_data: Dict[str, Any], conn=None) -> Di
     rag_res = retrieve_pump_context(
         query=f"{pump_family} datasheet technical specification installation application",
         pump_family=pump_family,
-        k=3
+        k=5
     )
 
     # Format LangChain prompt
@@ -105,7 +105,7 @@ def ask_question(question: str, pump_id: Optional[str] = None, conn=None) -> Dic
         query=question,
         pump_family=pump_family,
         family_prefix=family_prefix,
-        k=3
+        k=5
     )
 
     # Check if a specific family was requested but no relevant documents matched

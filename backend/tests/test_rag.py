@@ -121,3 +121,52 @@ def test_unsupported_family_query_returns_insufficient_context():
     assert res["sources"] == []
     assert "No relevant manufacturer datasheet documentation found" in res["answer"]
     assert "XYZ999" in res["answer"]
+
+def test_direct_answer_no_meta_response():
+    res = ask_question("What type of liquid can DSD5 pump handle?")
+    assert "sources" in res
+    assert len(res["sources"]) > 0
+    answer_lower = res["answer"].lower()
+    
+    # Assert that the answer doesn't contain generic meta-phrases
+    meta_phrases = [
+        "detailed in the datasheet",
+        "according to the documentation",
+        "please refer to",
+        "the available manufacturer documentation provides"
+    ]
+    for phrase in meta_phrases:
+        assert phrase not in answer_lower, f"Answer contains prohibited meta-phrase: '{phrase}'"
+        
+    # Assert that it actually contains factual keywords likely found in the context (e.g. clean water, liquid, etc)
+    assert "water" in answer_lower or "liquid" in answer_lower or "clean" in answer_lower
+
+def test_unsupported_question_with_valid_context_returns_insufficient_context():
+    # DS17 is a valid family and ds17.pdf will be retrieved
+    res = ask_question("Does DS17 require a remote starter?")
+    
+    # Assert that documents WERE actually retrieved
+    assert "sources" in res
+    assert len(res["sources"]) > 0
+    
+    # But because the documents don't contain info about remote starters (or the mock LLM knows it's an unsupported question), 
+    # it must return the exact insufficient-context response
+    expected_response = "The available manufacturer documentation does not provide enough information to answer that question."
+    assert res["answer"].strip() == expected_response
+
+def test_3_phase_ds_remote_dol_starter():
+    res = ask_question("Do 3-phase DS pumps require a remote DOL starter?")
+    
+    # Assert documents were retrieved
+    assert "sources" in res
+    assert len(res["sources"]) > 0
+    
+    answer = res["answer"].lower()
+    # Ensure it's not the insufficient context response
+    assert "does not provide enough information" not in answer
+    
+    # Ensure it extracted the remote DOL starter info
+    assert "remote dol starter" in answer or "remote starter" in answer
+    assert "three phase" in answer or "3-phase" in answer
+
+

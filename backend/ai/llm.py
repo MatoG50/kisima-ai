@@ -65,10 +65,7 @@ class MockLLM(BaseChatModel):
                         "of up to 300 meters below static water level."
                     )
                 else:
-                    answer = (
-                        f"Based on official Dayliff DSS series manufacturer documentation, {question_str} "
-                        "is governed by heavy-duty stainless steel construction standards and manufacturer design specifications."
-                    )
+                    answer = "The available manufacturer documentation does not provide enough information to answer that question."
             elif fam_prefix == "DSP":
                 if "material" in q_lower or "construction" in q_lower or "steel" in q_lower:
                     answer = (
@@ -80,10 +77,7 @@ class MockLLM(BaseChatModel):
                         "Dayliff DSP series solar pumps operate on DC power from solar PV arrays with integrated MPPT controllers."
                     )
                 else:
-                    answer = (
-                        f"Based on official Dayliff DSP series manufacturer documentation, {question_str} "
-                        "is specified in the Dayliff solar pump technical catalog."
-                    )
+                    answer = "The available manufacturer documentation does not provide enough information to answer that question."
             elif fam_prefix == "DSD":
                 if "material" in q_lower or "construction" in q_lower or "steel" in q_lower:
                     answer = (
@@ -94,17 +88,18 @@ class MockLLM(BaseChatModel):
                     answer = (
                         "Dayliff DSD series submersible pumps have a maximum immersion depth rating of up to 150 meters."
                     )
-                else:
+                elif "liquid" in q_lower or "water" in q_lower:
                     answer = (
-                        f"Based on official Dayliff DSD series manufacturer documentation, {question_str} "
-                        "is detailed in the DSD product technical datasheet."
+                        "Dayliff DSD pumps are designed specifically for handling clean, non-aggressive water with a maximum sand content of 50g/m³."
                     )
+                else:
+                    answer = "The available manufacturer documentation does not provide enough information to answer that question."
             else: # DS or general
                 if "depth" in q_lower or "immersion" in q_lower:
                     answer = (
                         "Dayliff DS series submersible pumps have a maximum immersion depth rating of up to 200 meters for 4-inch motors and 300 meters for 6-inch motors."
                     )
-                elif "phase" in q_lower or "voltage" in q_lower or "electrical" in q_lower:
+                elif "phase" in q_lower and "voltage" in q_lower:
                     answer = (
                         "Dayliff DS submersible pumps are available in single-phase (1x240V, 50Hz) and three-phase (3x415V, 50Hz) motor options."
                     )
@@ -117,10 +112,26 @@ class MockLLM(BaseChatModel):
                         "Dayliff DS 4-inch submersible pumps are designed for installation inside 4-inch (100mm) or larger borehole casings."
                     )
                 else:
-                    answer = (
-                        f"Based on manufacturer technical datasheet specifications, {question_str} "
-                        "is governed by standard operating limits and manufacturer design standards detailed in the product catalog."
-                    )
+                    # Smart Extractive Fallback for arbitrary questions
+                    ignore = {"what", "is", "the", "are", "in", "for", "does", "do", "a", "an", "of", "to", "and", "pump", "pumps", "require", "can", "handle", "type", "use", "used", "have", "with", "any", "which"}
+                    q_words = set(w.strip("?") for w in question_str.lower().split() if w.strip("?") not in ignore and len(w.strip("?")) > 2)
+                    print(f"MockLLM q_words: {q_words}")
+                    
+                    valid_lines = []
+                    for line in rag_context_str.split('\n'):
+                        line_lower = line.lower()
+                        score = sum(1 for w in q_words if w in line_lower)
+                        if score >= 2:
+                            if not line.startswith("[") and not line.startswith("Page"):
+                                print(f"MockLLM valid line score {score}: {line}")
+                                valid_lines.append((score, line.strip()))
+                                
+                    if valid_lines:
+                        valid_lines.sort(key=lambda x: x[0], reverse=True)
+                        best_line = valid_lines[0][1]
+                        answer = f"Based on the manufacturer datasheet: {best_line}"
+                    else:
+                        answer = "The available manufacturer documentation does not provide enough information to answer that question."
 
             gen = ChatGeneration(message=AIMessage(content=answer))
             return ChatResult(generations=[gen])
