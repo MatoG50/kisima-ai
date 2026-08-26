@@ -3,10 +3,11 @@ LangChain RAG Pipeline Orchestration Module.
 Coordinates PostgreSQL structured data, LangChain Chroma document retrieval, LLM invocation, and source attribution.
 """
 
+import re
 from typing import Dict, Any, Optional
 import psycopg2
 
-from backend.rag.metadata import map_pump_id_to_family
+from backend.rag.metadata import map_pump_id_to_family, extract_family_prefix, detect_pump_family_from_query
 from backend.rag.retrieval import retrieve_pump_context
 from backend.ai.llm import get_llm_model
 from backend.ai.prompts import EXPLAIN_RECOMMENDATION_PROMPT, ASK_QUESTION_PROMPT
@@ -68,9 +69,11 @@ def explain_recommendation(recommendation_data: Dict[str, Any], conn=None) -> Di
 def ask_question(question: str, pump_id: Optional[str] = None, conn=None) -> Dict[str, Any]:
     """
     Answer user technical Q&A using RAG datasheet retrieval and PostgreSQL structured data context.
+    Enforces strict pump-family detection and context validation.
     """
     postgres_context_str = "No specific pump model selected."
     pump_family = None
+    family_prefix = None
 
     if pump_id and conn:
         try:
@@ -78,6 +81,7 @@ def ask_question(question: str, pump_id: Optional[str] = None, conn=None) -> Dic
             match_p = next((p for p in p_obj if p.pump_id == pump_id.strip().lower()), None)
             if match_p:
                 pump_family = map_pump_id_to_family(match_p.pump_id)
+                family_prefix = extract_family_prefix(pump_family)
                 postgres_context_str = (
                     f"Selected Pump: {match_p.pump_name} (ID: {match_p.pump_id})\n"
                     f"Motor Power: {match_p.motor_kw} kW | Max Submersion Depth: {match_p.max_depth_m} m\n"
@@ -87,13 +91,40 @@ def ask_question(question: str, pump_id: Optional[str] = None, conn=None) -> Dic
             pass
     elif pump_id:
         pump_family = map_pump_id_to_family(pump_id)
+        family_prefix = extract_family_prefix(pump_family)
 
-    # Retrieve RAG context from Chroma
+    # Detect family or prefix from question text if not provided by pump_id
+    q_family, q_prefix = detect_pump_family_from_query(question, pump_id)
+    if q_family:
+        pump_family = q_family
+    if q_prefix:
+        family_prefix = q_prefix
+
+    # Retrieve RAG context from Chroma with strict family filtering
     rag_res = retrieve_pump_context(
         query=question,
         pump_family=pump_family,
+        family_prefix=family_prefix,
         k=3
     )
+
+    # Check if a specific family was requested but no relevant documents matched
+    if (family_prefix or pump_family) and (not rag_res.get("family_found") or not rag_res.get("sources")):
+        target_fam = pump_family or family_prefix
+        answer_text = f"No relevant manufacturer datasheet documentation found for the requested {target_fam} pump family."
+        return {
+            "answer": answer_text,
+            "pump_id": pump_id,
+            "sources": []
+        }
+
+    # If no context found generally
+    if not rag_res.get("context_text"):
+        return {
+            "answer": "No relevant manufacturer datasheet documentation found for your query.",
+            "pump_id": pump_id,
+            "sources": []
+        }
 
     # Format LangChain prompt
     prompt = ASK_QUESTION_PROMPT.format(

@@ -18,10 +18,12 @@ except ImportError:
     ChatOpenAI = None  # type: ignore
     HAS_OPENAI = False
 
+from backend.rag.metadata import detect_pump_family_from_query
+
 class MockLLM(BaseChatModel):
     """
     Deterministic Mock LLM for offline testing, cost control, and demonstration.
-    Extracts key engineering parameters from prompt and synthesizes a clear technical explanation.
+    Extracts key engineering parameters or technical questions from prompt and synthesizes concise responses.
     """
     @property
     def _llm_type(self) -> str:
@@ -36,7 +38,94 @@ class MockLLM(BaseChatModel):
     ) -> ChatResult:
         prompt_text = "\n".join([m.content for m in messages if hasattr(m, 'content')])
         
-        # Regex parse engineering data from EXPLAIN_RECOMMENDATION_PROMPT
+        # 1. Handle Technical Q&A Prompts (ASK_QUESTION_PROMPT)
+        q_m = re.search(r"USER QUESTION:\s*(.+)", prompt_text)
+        if q_m:
+            question_str = q_m.group(1).strip()
+            q_lower = question_str.lower()
+
+            fam_model, fam_prefix = detect_pump_family_from_query(question_str)
+            target_fam = fam_model or fam_prefix or "DS"
+
+            # Check if rag_context in prompt is empty or explicitly failed
+            rag_match = re.search(r"MANUFACTURER PDF DATASHEET CONTEXT \(RAG\):\s*([\s\S]*)", prompt_text)
+            rag_context_str = rag_match.group(1).strip() if rag_match else ""
+
+            if not rag_context_str or "No manufacturer PDF" in rag_context_str or "No specific manufacturer datasheet" in rag_context_str:
+                answer = f"No relevant manufacturer datasheet documentation found for the requested {target_fam} pump family."
+            elif fam_prefix == "DSS":
+                if "material" in q_lower or "construction" in q_lower or "steel" in q_lower:
+                    answer = (
+                        "Dayliff DSS series submersible pumps are constructed with heavy-duty AISI304 stainless steel "
+                        "pump casings, impellers, diffusers, and suction strainers for high corrosion resistance in demanding applications."
+                    )
+                elif "depth" in q_lower or "immersion" in q_lower:
+                    answer = (
+                        "Dayliff DSS heavy-duty stainless steel submersible pumps are rated for a maximum immersion depth "
+                        "of up to 300 meters below static water level."
+                    )
+                else:
+                    answer = (
+                        f"Based on official Dayliff DSS series manufacturer documentation, {question_str} "
+                        "is governed by heavy-duty stainless steel construction standards and manufacturer design specifications."
+                    )
+            elif fam_prefix == "DSP":
+                if "material" in q_lower or "construction" in q_lower or "steel" in q_lower:
+                    answer = (
+                        "Dayliff DSP solar submersible pumps feature stainless steel wet ends with permanent magnet "
+                        "brushless DC motors designed for high-efficiency solar water pumping."
+                    )
+                elif "phase" in q_lower or "electrical" in q_lower or "solar" in q_lower:
+                    answer = (
+                        "Dayliff DSP series solar pumps operate on DC power from solar PV arrays with integrated MPPT controllers."
+                    )
+                else:
+                    answer = (
+                        f"Based on official Dayliff DSP series manufacturer documentation, {question_str} "
+                        "is specified in the Dayliff solar pump technical catalog."
+                    )
+            elif fam_prefix == "DSD":
+                if "material" in q_lower or "construction" in q_lower or "steel" in q_lower:
+                    answer = (
+                        "Dayliff DSD series submersible pumps feature AISI304 stainless steel pump casings, "
+                        "noryl impellers, and heavy-duty NEMA standard motor couplings."
+                    )
+                elif "depth" in q_lower or "immersion" in q_lower:
+                    answer = (
+                        "Dayliff DSD series submersible pumps have a maximum immersion depth rating of up to 150 meters."
+                    )
+                else:
+                    answer = (
+                        f"Based on official Dayliff DSD series manufacturer documentation, {question_str} "
+                        "is detailed in the DSD product technical datasheet."
+                    )
+            else: # DS or general
+                if "depth" in q_lower or "immersion" in q_lower:
+                    answer = (
+                        "Dayliff DS series submersible pumps have a maximum immersion depth rating of up to 200 meters for 4-inch motors and 300 meters for 6-inch motors."
+                    )
+                elif "phase" in q_lower or "voltage" in q_lower or "electrical" in q_lower:
+                    answer = (
+                        "Dayliff DS submersible pumps are available in single-phase (1x240V, 50Hz) and three-phase (3x415V, 50Hz) motor options."
+                    )
+                elif "material" in q_lower or "construction" in q_lower or "steel" in q_lower:
+                    answer = (
+                        "Dayliff DS pumps feature stainless steel pump bodies with glass-filled polycarbonate impellers for durability."
+                    )
+                elif "diameter" in q_lower or "size" in q_lower or "casing" in q_lower:
+                    answer = (
+                        "Dayliff DS 4-inch submersible pumps are designed for installation inside 4-inch (100mm) or larger borehole casings."
+                    )
+                else:
+                    answer = (
+                        f"Based on manufacturer technical datasheet specifications, {question_str} "
+                        "is governed by standard operating limits and manufacturer design standards detailed in the product catalog."
+                    )
+
+            gen = ChatGeneration(message=AIMessage(content=answer))
+            return ChatResult(generations=[gen])
+
+        # 2. Handle Recommendation Explanation Prompts (EXPLAIN_RECOMMENDATION_PROMPT)
         pump_id_m = re.search(r"Recommended Pump Model:\s*(.+)", prompt_text)
         app_type_m = re.search(r"Application Type:\s*(.+)", prompt_text)
         yield_m = re.search(r"Borehole Yield:\s*(.+)", prompt_text)
@@ -95,8 +184,7 @@ class MockLLM(BaseChatModel):
             explanation = f"{para1}\n\n{para2}"
         else:
             explanation = (
-                "Based on your engineering parameters and manufacturer datasheet context, "
-                "the selected pump model provides optimal hydraulic performance and high operational efficiency for your water system."
+                "Refer to manufacturer PDF datasheets and technical documentation for detailed pump curve performance and installation guidance."
             )
         
         gen = ChatGeneration(message=AIMessage(content=explanation))
