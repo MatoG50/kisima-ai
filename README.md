@@ -1,107 +1,256 @@
-# AI-Powered Pump & Solar Sizing Backend
+# Kisima AI
 
-Backend engineering data pipeline, hydraulic calculations database, and RAG retrieval infrastructure for solar pump sizing.
+## AI-Assisted Borehole & Well Pump Sizing and Recommendation System
 
----
+Kisima AI is an AI-assisted hydraulic engineering application designed to help engineers and water-system professionals size and select appropriate submersible borehole pumps.
 
-## Stage 2 — Excel to PostgreSQL Data Pipeline
+The system combines a deterministic hydraulic engineering engine with manufacturer pump specifications, pump performance curves, PostgreSQL, and Retrieval-Augmented Generation (RAG) to produce technically grounded pump recommendations and manufacturer-documentation assistance.
 
-Stage 2 establishes the normalized PostgreSQL database for the pump sizing application and executes an idempotent, validated import of manufacturer specification and performance curve data from Excel workbooks (`pump_models.xlsx` and `pump_curves.xlsx`).
-
----
-
-## Directory Architecture
-
-```
-capstone-backend/
-├── data/
-│   └── source/
-│       ├── pump_models.xlsx   # Authoritative source pump specifications
-│       └── pump_curves.xlsx   # Authoritative source performance curve points
-├── backend/
-│   ├── database/
-│   │   ├── connection.py      # PostgreSQL connection factory and DDL initializer
-│   │   └── schema.sql         # PostgreSQL DDL schema definition
-│   ├── models/
-│   │   └── pump.py            # Dataclasses and PhaseOptionEnum definitions
-│   ├── validation/
-│   │   └── validator.py       # Data validation & relationship integrity engine
-│   ├── repositories/
-│   │   └── pump_repository.py # Idempotent bulk upsert repository
-│   ├── scripts/
-│   │   └── import_pumps.py    # Main CLI importer & report generator
-│   └── tests/
-│       └── test_importer.py   # Automated pytest unit test suite
-├── README.md
-└── requirements.txt
-```
+> **Engineering-first architecture:** The deterministic engineering engine is authoritative for pump sizing and selection. AI is used to explain engineering results and answer questions from manufacturer documentation rather than independently determining pump suitability.
 
 ---
 
-## Environment & Configuration
+## Live Application
 
-Set the following environment variables to configure PostgreSQL database connection details:
+**Live Demo:** _url_
 
-| Environment Variable | Default Value | Description |
-| :--- | :--- | :--- |
-| `POSTGRES_DB` | `capstone_pump_db` | PostgreSQL Database Name |
-| `POSTGRES_USER` | `postgres` | Database User |
-| `POSTGRES_PASSWORD` | `postgres` | Database Password |
-| `POSTGRES_HOST` | `localhost` | Database Host |
-| `POSTGRES_PORT` | `5432` | Database Port |
+**GitHub Repository:** _https://github.com/MatoG50/kisima-ai_
+
+**Agile Task Board:** _url_
 
 ---
 
-## Setup & Running the Pipeline
+# 1. Project Overview
 
-### 1. Install Dependencies
-```bash
-python3 -m pip install openpyxl pandas psycopg2-binary pytest
-```
+Pump selection for borehole and well water systems requires several engineering parameters to be considered simultaneously, including:
 
-### 2. Run Automated Unit Tests
-```bash
-python3 -m pytest backend/tests/
-```
+- Available borehole yield
+- Pumping Water Level (PWL)
+- Pump Setting Depth (PSD)
+- Static lift
+- Delivery distance
+- Destination elevation
+- Required flow
+- Pipe friction losses
+- Total Dynamic Head (TDH)
+- Pump performance curves
+- Pump operating range
+- Sustainable borehole abstraction limits
 
-### 3. Run Dry-Run Data Validation
-To validate source Excel data without connecting to PostgreSQL:
-```bash
-python3 backend/scripts/import_pumps.py --dry-run
-```
+Kisima AI automates this workflow by combining hydraulic calculations with manufacturer pump data and AI-assisted technical explanations.
 
-### 4. Initialize Database Schema & Ingest Data into PostgreSQL
-Ensure PostgreSQL is running, then execute:
-```bash
-python3 backend/scripts/import_pumps.py --init-db
-```
+The application evaluates available pump models against the calculated duty point and returns:
 
-To re-run the importer idempotently (updates existing records without duplication):
-```bash
-python3 backend/scripts/import_pumps.py
-```
+1. A primary recommended pump
+2. Up to two suitable alternatives
+3. Hydraulic calculation details
+4. Pump curve operating information
+5. Abstraction status
+6. AI-generated technical explanation
+7. Manufacturer documentation assistance through RAG
 
 ---
 
-## PostgreSQL Database Schema Summary
+# 2. Key Features
 
-### Table: `pumps`
-* `pump_id` (`VARCHAR(50)`, Primary Key) — Lowercase canonical pump identifier.
-* `pump_name` (`VARCHAR(100)`) — Commercial pump model designation.
-* `motor_kw` (`NUMERIC(5,2)`) — Nominal motor output power rating ($\text{kW}$).
-* `max_depth_m` (`NUMERIC(6,2)`) — Maximum immersion depth / submersion head ($\text{m}$).
-* `phase_option` (`electrical_phase_enum`: `'1PH'`, `'3PH'`, `'1PH_3PH'`) — Electrical phase availability.
-* `flc_1ph_a` (`NUMERIC(5,2)`, Nullable) — Full Load Current at single-phase 1x240V ($\text{A}$).
-* `flc_3ph_a` (`NUMERIC(5,2)`, Nullable) — Full Load Current at three-phase 3x415V ($\text{A}$).
-* `discharge_size_in` (`NUMERIC(4,2)`) — Pump outlet diameter ($\text{in}$).
-* `raw_pump_id` (`VARCHAR(50)`) — Original extracted ID for traceability.
-* `created_at`, `updated_at` (`TIMESTAMPTZ`).
+## Hydraulic Pump Sizing
 
-### Table: `pump_curves`
-* `id` (`BIGINT`, Primary Key, Identity).
-* `pump_id` (`VARCHAR(50)`, Foreign Key $\rightarrow$ `pumps.pump_id` `ON DELETE CASCADE`).
-* `flow_m3h` (`NUMERIC(6,2)`) — Volumetric flow rate ($\text{m}^3/\text{h}$).
-* `head_m` (`NUMERIC(6,2)`) — Total Dynamic Head ($\text{m}$).
-* `efficiency_percent` (`NUMERIC(5,2)`) — Hydraulic efficiency ($\%$).
-* `created_at`, `updated_at` (`TIMESTAMPTZ`).
-* Constraint: `UNIQUE(pump_id, flow_m3h)` enforcing unique curve points per flow coordinate.
+Kisima AI calculates the hydraulic requirements of a water system using engineering-based calculations.
+
+The system evaluates:
+
+- Static lift
+- Riser pipe friction
+- Delivery pipe friction
+- Destination elevation
+- Total Dynamic Head (TDH)
+- Required operating flow
+- Pump curve duty point
+
+Hazen-Williams friction calculations are used for pipe-loss estimation.
+
+---
+
+## Sustainable Borehole Abstraction Protection
+
+For borehole applications, Kisima AI protects against excessive abstraction.
+
+The system evaluates the requested/design flow against the tested borehole yield and classifies the abstraction condition.
+
+Possible states include:
+
+- `SUSTAINABLE`
+- `HIGH_ABSTRACTION`
+- `EXCEEDS_YIELD`
+
+The recommendation engine prevents pump selection where the required abstraction exceeds the permitted engineering limit.
+
+---
+
+## Pump Curve Evaluation
+
+Manufacturer pump performance data is stored as normalized curve points and evaluated against the calculated hydraulic duty point.
+
+The system uses pump curve interpolation to determine pump performance at the required operating flow.
+
+Candidate pumps are evaluated based on:
+
+- Available head
+- Required TDH
+- Operating flow
+- Curve operating range
+- Head margin
+- Efficiency
+- Pump depth limitations
+- Other manufacturer specifications
+
+---
+
+## Appropriateness Filtering
+
+Kisima AI does not simply select the pump with the highest available head.
+
+The recommendation engine applies an appropriateness filter to avoid unsuitable oversized or poorly matched pumps.
+
+The final API response provides:
+
+- **1 recommended pump**
+- **Up to 2 alternatives**
+
+This keeps the result focused on pumps that are technically appropriate for the calculated duty point.
+
+---
+
+# 3. Application Modes
+
+## Borehole
+
+The borehole workflow uses:
+
+- Tested borehole yield
+- Pumping Water Level (PWL)
+- Pump Setting Depth (PSD)
+- Customer-required flow
+- Delivery distance
+- Destination elevation
+
+The system applies sustainable abstraction protection and evaluates suitable submersible borehole pumps.
+
+---
+
+## Well
+
+The well workflow is intended for shallow well or surface-water submersible applications where borehole drawdown information is not required.
+
+The workflow uses:
+
+- Static head
+- Customer-required flow
+- Delivery distance
+
+The default candidate family is the DSD Series.
+
+---
+
+# 4. AI Capabilities
+
+Kisima AI uses AI engineering techniques in two primary areas.
+
+## AI Technical Explanation
+
+After the deterministic engineering engine selects a pump, the AI explanation service converts the engineering output into a technical, customer-facing explanation.
+
+The AI receives the authoritative engineering result rather than independently calculating the pump selection.
+
+This separation helps prevent the language model from overriding engineering rules.
+
+---
+
+## Manufacturer AI Assistant
+
+The Manufacturer AI Assistant provides conversational access to indexed manufacturer documentation.
+
+Users can ask questions about topics such as:
+
+- Pump materials
+- Maximum immersion depth
+- Electrical phase options
+- Minimum borehole diameter
+- Liquid compatibility
+- Maximum liquid temperature
+- Manufacturer specifications
+
+The assistant uses Retrieval-Augmented Generation (RAG) to retrieve relevant manufacturer documentation from the vector database.
+
+Responses include document citations where available.
+
+### Grounding Strategy
+
+The assistant is designed to:
+
+1. Identify the relevant pump family/model from the question.
+2. Retrieve relevant manufacturer documentation.
+3. Restrict retrieval to the appropriate pump family where possible.
+4. Provide answers based only on retrieved documentation.
+5. Return an insufficient-context response when the available documentation does not support an answer.
+
+This reduces the risk of presenting unsupported manufacturer specifications.
+
+---
+
+# 5. Future AI Copilot
+
+A conversational hydraulic assistant is planned as a future enhancement.
+
+The proposed Copilot will allow users to provide engineering requirements using natural language.
+
+For example:
+
+> "I need a pump for a borehole with a yield of 12 m³/h."
+
+The future assistant could collect the required parameters conversationally and convert them into structured engineering inputs.
+
+The deterministic sizing engine would then remain responsible for the actual hydraulic calculations and pump selection.
+
+**Status: Coming Soon / Future Feature**
+
+---
+
+# 6. System Architecture
+
+Kisima AI follows a layered architecture separating the user interface, API layer, deterministic engineering logic, data storage, and AI/RAG services.
+
+```text
+                         ┌──────────────────────┐
+                         │      React UI        │
+                         │ TypeScript / Vite    │
+                         │ Tailwind CSS         │
+                         └──────────┬───────────┘
+                                    │
+                               REST API
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │       FastAPI        │
+                         │      API Layer       │
+                         └──────────┬───────────┘
+                                    │
+                 ┌──────────────────┴──────────────────┐
+                 │                                     │
+                 ▼                                     ▼
+       ┌──────────────────────┐              ┌──────────────────────┐
+       │ Deterministic        │              │ AI / RAG Layer       │
+       │ Engineering Engine   │              │                      │
+       │                      │              │ LangChain             │
+       │ Hydraulic Calculations│             │ Chroma                 │
+       │ Pump Selection       │              │ LLM                    │
+       │ Curve Evaluation     │              │ Manufacturer PDFs      │
+       └──────────┬───────────┘              └──────────────────────┘
+                  │
+                  ▼
+       ┌──────────────────────┐
+       │ PostgreSQL           │
+       │                      │
+       │ Pump Specifications  │
+       │ Pump Curve Data      │
+       └──────────────────────┘
