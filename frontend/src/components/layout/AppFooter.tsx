@@ -17,13 +17,13 @@ export const AppFooter: React.FC = () => {
             <p className="text-sm text-slate-400 max-w-sm mb-4">
               AI-assisted hydraulic water pump sizing platform powered by manufacturer specifications and RAG intelligence.
             </p>
-            <div className="flex items-center gap-4 text-xs text-slate-400">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">
               <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                 Hazen-Williams Hydraulic Engine
               </span>
               <span className="flex items-center gap-1.5">
-                <Database className="w-4 h-4 text-cyan-400" />
+                <Database className="w-4 h-4 text-cyan-400 shrink-0" />
                 PostgreSQL Catalog
               </span>
             </div>
@@ -55,9 +55,9 @@ export const AppFooter: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
+        <div className="pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4 text-center sm:text-left">
           <p>© {new Date().getFullYear()} Kisima AI Engineering Platform. All rights reserved.</p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-6">
             <span>REST API v1.0.0</span>
             <span>RAG Vector Index v1.0</span>
             <span>PostgreSQL Database</span>
