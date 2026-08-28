@@ -169,3 +169,21 @@ An on-premises deployment involves installing Kisima AI on dedicated local serve
 ## Deployment Recommendation
 
 For Kisima AI, a **Managed Cloud Deployment (Vercel + Render + Managed PostgreSQL)** is strongly recommended. It minimizes operational overhead, ensures continuous deployment via GitHub Actions CI/CD, provides automated scaling, and offers the lowest total cost of ownership (TCO) for field deployment.
+
+---
+
+# 4. AI-Assisted Development & Data Extraction
+
+In alignment with modern software engineering practices, this capstone project utilized AI-assisted tools to accelerate development while maintaining rigorous human oversight.
+
+## Development Environment & Assistance
+* **Antigravity IDE**: The project was primarily developed using Antigravity, an advanced agentic AI coding environment that provided repository-level development support and context-aware coding assistance.
+* **GPT & Google Gemini**: These AI models were utilized as development assistants throughout the software lifecycle. They provided support for code review, debugging, implementation suggestions, test suite development and troubleshooting, documentation refinement, and deployment configuration guidance.
+
+## Data Extraction
+* **WebPlotDigitizer**: Where tabular numerical data for pump performance curves was not published by the manufacturer, WebPlotDigitizer was used to accurately extract discrete head-flow ($H-Q$) curve points directly from the manufacturer's graphical performance charts. This extracted data was subsequently validated against the original source curves and fundamental engineering expectations before being incorporated into the authoritative PostgreSQL pump dataset.
+
+## Human Oversight & Engineering Authority
+It is critical to note that AI tools were used strictly as **development support multipliers**, rather than as the authority for engineering or architectural decisions. 
+* The deterministic hydraulic calculations, sustainable abstraction rules, pump-selection logic, appropriateness filtering, and final engineering behavior were designed, implemented, reviewed, and validated by the human developer.
+* Comprehensive testing and validation (as detailed in Section 2) were performed to verify that the resulting implementation behaved strictly according to the defined engineering requirements and constraints. AI did not independently design, dictate, or validate the engineering system.
