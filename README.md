@@ -12,11 +12,15 @@ The system combines a deterministic hydraulic engineering engine with manufactur
 
 ## Live Application
 
-**Live Demo:** _url_
+`[Insert Live Deployment URL Here]`
 
-**GitHub Repository:** _https://github.com/MatoG50/kisima-ai_
+**GitHub Repository:** [https://github.com/MatoG50/kisima-ai]
 
-**Agile Task Board:** _url_
+---
+
+## Project Management
+
+`[https://trello.com/invite/b/6a8f551be11c51218a44d7f8/ATTI93a6be9ac6a10fb2db1c1dfd75417a77CF37C0AF/kisima-ai-msse-capstone]`
 
 ---
 
@@ -216,7 +220,7 @@ The deterministic sizing engine would then remain responsible for the actual hyd
 
 ---
 
-# 6. System Architecture
+# 6. System Architecture & Tech Stack
 
 Kisima AI follows a layered architecture separating the user interface, API layer, deterministic engineering logic, data storage, and AI/RAG services.
 
@@ -241,10 +245,10 @@ Kisima AI follows a layered architecture separating the user interface, API laye
        ┌──────────────────────┐              ┌──────────────────────┐
        │ Deterministic        │              │ AI / RAG Layer       │
        │ Engineering Engine   │              │                      │
-       │                      │              │ LangChain             │
-       │ Hydraulic Calculations│             │ Chroma                 │
-       │ Pump Selection       │              │ LLM                    │
-       │ Curve Evaluation     │              │ Manufacturer PDFs      │
+       │                      │              │ LangChain            │
+       │ Hydraulic Calculations│             │ Chroma               │
+       │ Pump Selection       │              │ LLM                  │
+       │ Curve Evaluation     │              │ Manufacturer PDFs    │
        └──────────┬───────────┘              └──────────────────────┘
                   │
                   ▼
@@ -254,3 +258,159 @@ Kisima AI follows a layered architecture separating the user interface, API laye
        │ Pump Specifications  │
        │ Pump Curve Data      │
        └──────────────────────┘
+```
+
+### Technology Stack
+* **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Lucide Icons.
+* **Backend API**: Python 3.11, FastAPI, Uvicorn, Pydantic v2.
+* **Database**: PostgreSQL (`psycopg2-binary`).
+* **Engineering Engine**: Python (Hazen-Williams SI equations, linear H-Q curve interpolation, sustainable abstraction rules).
+* **AI & RAG Pipeline**: LangChain, ChromaDB vector embeddings, OpenAI GPT-4o-mini (with offline MockLLM fallback).
+* **CI/CD**: GitHub Actions workflows for automated Pytest and Vite build verification.
+
+---
+
+# 7. Project Structure
+
+```text
+kisima-ai/
+├── .github/
+│   └── workflows/
+│       └── main.yml            # GitHub Actions CI workflow
+├── backend/
+│   ├── ai/                     # RAG orchestration, prompts, and LLM abstraction
+│   ├── api/                    # FastAPI routers, schema models, and endpoint handlers
+│   ├── database/               # PostgreSQL connection factory and DDL schema
+│   ├── engineering/            # Hazen-Williams friction, head, and hydraulic models
+│   ├── models/                 # Dataclasses and enums (PumpModel, PhaseOptionEnum)
+│   ├── rag/                    # PDF chunking, metadata extraction, and Chroma search
+│   ├── repositories/           # PumpRepository data access layer
+│   ├── rules/                  # Borehole and Well engineering business rules
+│   ├── scripts/                # Database import and schema initialization scripts
+│   ├── selection/              # Pump evaluation, curve interpolation, and ranking
+│   ├── tests/                  # Pytest test suite (113 passing tests)
+│   └── validation/             # Source data validation and integrity engine
+├── data/
+│   ├── documents/              # Manufacturer PDF datasheets
+│   └── source/                 # Authoritative Excel specification and curve workbooks
+├── docs/                       # Technical design and stage milestone reports
+├── frontend/
+│   ├── src/
+│   │   ├── components/         # React workspace, layout, result, and modal components
+│   │   ├── services/           # REST API fetch clients and TypeScript types
+│   │   ├── App.tsx             # Root workspace state manager
+│   │   └── main.tsx            # React application entry point
+│   ├── package.json            # Node.js dependencies and build scripts
+│   └── vite.config.ts          # Vite bundler configuration
+├── Design_and_Testing.md       # MSSE Capstone system design and testing report
+├── README.md                   # Project documentation
+└── requirements.txt            # Python backend dependencies
+```
+
+---
+
+# 8. Local Setup Instructions
+
+Follow these instructions to clone and run Kisima AI on your local development machine.
+
+### Prerequisites
+* **Python**: `3.10` or `3.11`
+* **Node.js**: `v18` or `v20+`
+* **PostgreSQL**: `v14+` running locally or via Docker
+* **Git**
+
+---
+
+### Backend Setup
+
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/MatoG50/kisima-ai.git
+   cd kisima-ai
+   ```
+
+2. **Create and Activate a Python Virtual Environment:**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+
+3. **Install Backend Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Environment Variables:**
+   Copy `.env.example` to `.env` or export the variables in your terminal:
+   ```bash
+   cp .env.example .env
+   ```
+
+   Default environment configuration:
+   ```ini
+   POSTGRES_DB=capstone_pump_db
+   POSTGRES_USER=postgres
+   POSTGRES_PASSWORD=postgres
+   POSTGRES_HOST=localhost
+   POSTGRES_PORT=5432
+   OPENAI_API_KEY=your_openai_api_key_here # Optional: MockLLM is used if omitted
+   LLM_PROVIDER=auto
+   ```
+
+5. **Initialize Database Schema & Ingest Source Data:**
+   Ensure PostgreSQL is running and the target database exists, then initialize tables and ingest pump curve data:
+   ```bash
+   python3 backend/scripts/import_pumps.py --init-db
+   ```
+
+6. **Run Backend REST API Server:**
+   ```bash
+   uvicorn backend.api.main:app --reload --port 8000
+   ```
+   The API interactive documentation will be available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+
+---
+
+### Frontend Setup
+
+1. **Navigate to the Frontend Directory:**
+   ```bash
+   cd frontend
+   ```
+
+2. **Install Frontend Dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Run the Frontend Development Server:**
+   ```bash
+   npm run dev
+   ```
+   The application UI will open at [http://localhost:5173](http://localhost:5173).
+
+---
+
+### Running Tests & Building
+
+* **Run Backend Pytest Suite:**
+  ```bash
+  python3 -m pytest backend/tests/ -v
+  ```
+
+* **Run Production Frontend Build:**
+  ```bash
+  cd frontend
+  npm run build
+  ```
+
+---
+
+# 9. Deployment Overview
+
+Kisima AI is designed for containerized or PaaS cloud deployment:
+
+* **Frontend**: Can be built into static assets (`dist/`) and deployed to Vercel, Netlify, or AWS S3/CloudFront.
+* **Backend API**: Can be deployed to Render, Railway, or AWS App Runner using `uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT`.
+* **Database**: Uses managed PostgreSQL (Render Postgres, Supabase, or AWS RDS).
+* **CI/CD Pipeline**: GitHub Actions automatically runs backend tests (`pytest backend/tests/`) and frontend build checks (`npm run build`) on every push to `main`.
