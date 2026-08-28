@@ -12,16 +12,15 @@ The system combines a deterministic hydraulic engineering engine with manufactur
 
 ## Live Application
 
-`[https://kisima-ai.vercel.app/]`
+[Launch Kisima AI](https://kisima-ai.vercel.app/)
 
-**GitHub Repository:** [https://github.com/MatoG50/kisima-ai]
+**GitHub Repository:** [View Source Code](https://github.com/MatoG50/kisima-ai)
 
 ---
 
 ## Project Management
 
-`[https://trello.com/invite/b/6a8f551be11c51218a44d7f8/ATTI93a6be9ac6a10fb2db1c1dfd75417a77CF37C0AF/kisima-ai-msse-capstone]`
-
+[View Agile Task Board](https://trello.com/invite/b/6a8f551be11c51218a44d7f8/ATTI93a6be9ac6a10fb2db1c1dfd75417a77CF37C0AF/kisima-ai-msse-capstone)
 ---
 
 # 1. Project Overview
