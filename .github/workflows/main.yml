@@ -32,6 +32,11 @@ jobs:
       POSTGRES_PASSWORD: postgres
       POSTGRES_HOST: localhost
       POSTGRES_PORT: 5432
+      PGDATABASE: capstone_pump_db
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGHOST: localhost
+      PGPORT: 5432
 
     steps:
       - name: Checkout Code
