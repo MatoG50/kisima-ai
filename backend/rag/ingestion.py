@@ -66,8 +66,9 @@ def generate_datasheet_fallback_text(family_name: str, family_prefix: str) -> st
             f"APPLICATION: Dayliff {family_name} ({family_prefix} series) submersible pumps are designed specifically for domestic and commercial borehole water supply applications.\n"
             f"MATERIALS & CONSTRUCTION: Multistage centrifugal design with all parts made from premium AISI304 stainless steel and glass-filled polycarbonate impellers with water lubricated rubber bearings.\n"
             f"OPERATING LIMITS: Max liquid temperature 50 C. Max water depth 300m for 6-inch motors and 200m for 4-inch motors. Min borehole diameter 4-inch (100mm) or 6-inch (150mm).\n"
-            f"MOTOR & POWER: Sealed liquid-cooled 2-pole motor. Single-phase 1x240V and three-phase 3x415V options."
+            f"MOTOR & POWER: Sealed liquid-cooled 2-pole motor. Single-phase 1x240V and three-phase 3x415V options. Three phase motors require a remote DOL starter; a Dayliff SCT electronic pump controller is recommended for comprehensive pump control including low level, motor overload and irregular power supply protection."
         )
+
 
 def ingest_pdf_directory(pdf_dir: str, chroma_dir: str = DEFAULT_CHROMA_DIR) -> Dict[str, Any]:
     """

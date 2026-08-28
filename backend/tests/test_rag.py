@@ -143,16 +143,17 @@ def test_direct_answer_no_meta_response():
 
 def test_unsupported_question_with_valid_context_returns_insufficient_context():
     # DS17 is a valid family and ds17.pdf will be retrieved
-    res = ask_question("Does DS17 require a remote starter?")
+    res = ask_question("Does DS17 feature integrated Bluetooth control?")
     
     # Assert that documents WERE actually retrieved
     assert "sources" in res
     assert len(res["sources"]) > 0
     
-    # But because the documents don't contain info about remote starters (or the mock LLM knows it's an unsupported question), 
+    # But because the documents don't contain info about Bluetooth control,
     # it must return the exact insufficient-context response
     expected_response = "The available manufacturer documentation does not provide enough information to answer that question."
     assert res["answer"].strip() == expected_response
+
 
 def test_3_phase_ds_remote_dol_starter():
     res = ask_question("Do 3-phase DS pumps require a remote DOL starter?")
