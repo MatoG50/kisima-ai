@@ -57,6 +57,10 @@ jobs:
         run: |
           python backend/scripts/import_pumps.py --init-db
 
+      - name: Ingest RAG Datasheets into Chroma
+        run: |
+          python backend/scripts/ingest_documents.py
+
       - name: Run Backend Pytest Suite
         run: |
           python -m pytest backend/tests/ -v
