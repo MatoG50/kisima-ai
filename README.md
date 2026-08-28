@@ -12,7 +12,7 @@ The system combines a deterministic hydraulic engineering engine with manufactur
 
 ## Live Application
 
-`[Insert Live Deployment URL]`
+`[https://kisima-ai.vercel.app/]`
 
 **GitHub Repository:** [https://github.com/MatoG50/kisima-ai]
 
